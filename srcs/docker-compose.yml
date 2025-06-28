@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   nginx:
@@ -13,7 +12,7 @@ services:
     networks:
       - inception
     volumes:
-      - ./srcs/requirements/nginx/conf/certs:/etc/nginx/certs
+      - ./requirements/nginx/conf/certs:/etc/nginx/certs
 
   wordpress:
     build: ./requirements/wordpress
@@ -24,9 +23,13 @@ services:
       - wordpress_data:/var/www/wordpress
     networks:
       - inception
+    restart: always
+    depends_on:
+      -  mariadb
 
   mariadb:
     build: ./requirements/mariadb
+    container_name: mariadb
     env_file:
       - .env
     volumes:

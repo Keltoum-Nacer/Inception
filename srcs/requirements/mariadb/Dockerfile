@@ -1,8 +1,12 @@
 FROM debian:bullseye
 
-RUN apt-get update && apt-get install -y mariadb-server
+RUN apt-get update && \
+    apt-get install -y mariadb-server && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY tools/setup.sh /tmp/
-RUN chmod +x /tmp/setup.sh
+Copy conf/my_custom.cnf /etc/mysql/mariadb.conf.d/my_custom.cnf
+COPY tools/setup.sh /usr/local/bin/setup.sh
+RUN chmod +x /usr/local/bin/setup.sh
 
-ENTRYPOINT ["/tmp/setup.sh"]
+CMD ["/usr/local/bin/setup.sh"]
+
