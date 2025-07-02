@@ -101,4 +101,17 @@ A **TLS Certificate** is a digital file that:
 * Encrypts communication so no one can read or modify the data between client and server.  
 To generate them use : `openssl`  
 
+## ConfigFile
 
+the NGINX configfile sefines hoe to serve a secure **WordPress website** over HTTPS **(port 443)** using PHP-FPM running in a container named wordpress.  
+* `listen 443 ssl;` -> tells the nginx to listen for HTTPS traffic on port 443 with TLS enabled.
+* `ssl_certificate` and `ssl_certificate_key` -> paths to your sel-signed TLS certificate and its private key.  
+* `ssl_prefer_server_ciphers on;` -> Ensures the server's cipher(method or algorith to encrypt and decrypt data) choices are preferred over the client's (for better seecurity).  
+* `root` -> path where nginx looks for the files to serve when a client requests a URL.  
+* `index index.php index.html index.htm;` -> when accessing a folder try to serve index.php first, then index.html, then index.htm.  
+* `try_files $uri $uri/ /index.php?$args;` -> tries to serve the exact file at `$uri` if that not a file, try it as a directory `$uri/` if neither a file nor a directory exists, rewrite the request to `index.php`, and pass the original query string.  
+* `location ~ \.php$` -> matches any request ending in .php.  
+* `include fastcgi_params;` -> loads necessary FastCGI parameters.  
+* `fastcgi_pass wordpress:9000;` -> foewards PHP requeststo the container named wordpress, on port 9000(this is usually where php-fpm listens).  
+* `fatscgi_index index.php;` -> default file for PHP processing.  
+* `fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;` -> tells FastCGI wich actual PHP file to execute.
