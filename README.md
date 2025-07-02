@@ -12,6 +12,11 @@ Docker and Virtual Machines both help you run applications in isolated environme
 
 ![Docker vs VM](srcs/assets/docker.png)
 
+## Docker Architecture
+Below is a simple diagram showing how the docker **client** and **daemon** interact:
+
+![Docker Architecture](srcs/assets/Arch.png)
+
 ## Dockerfile
 **Dockerfile** is a text file that contains a set of instructions to build a **Docker image**
 **Think of it like a recipe:** it tells Docker how to create an environment with everything your app or service needs to run.
@@ -58,7 +63,42 @@ You can create multiple running containers from the same image.
 
 ## Docker Network
 **Docker Network** allows containers to communicate with each other in a secure, isolated and controlled way.
-**bridge** is a network type for a single-host setups, most common for local development.
+**bridge** think of it as a **virtual LAN (local network) inside your computer. Containers on the same bridge network can communicate with each other using container names as hostnames.  
+In **Docker Compose**: `driver: bridge` creates a user-defined bridge network more powewrful than default one.
 
 ## Docker Compose
 **Docker compose** is a tool that lets you define and run multi-container Docker applications using a simple YAML file.
+
+## How Docker works?
+1- You write a **Dockerfile** describing how to build an image.  
+2- You bild an **image**  
+3- You run that image in a **container**  
+=> Managing individual containers/ images.
+
+## How Docker Compose works?
+1- You write a docker-compose.yml file that defines:  
+                - Each service (like NGINX, WordPress, MariaDB)  
+                - Volumes for data.  
+                - Networks to connect services.  
+                - Ports to expose.  
+2- You launch all services by : `docker-compose up`  
+=> Managing multi-container applications, connecting them with a private network.
+
+# Nginx Container
+
+## What is Nginx?
+**Nginx** is a high performance web server and reverse proxy.it's widely used to:
+* Serve static files (HTML, CSS, ...)
+* Act as a reverse proxy for backend services (PHP, WordPress, ...)
+* Hanle HTTPS(TLS) connections.
+* Improve performance and security.
+
+## What is TLS?
+**Transport Layer Security** is a security protocol used to encrypt communications between a client and a server.  
+TLS is the modern replacement for the old SSL protocol.  
+A **TLS Certificate** is a digital file that:  
+* Proves your server's identity (so users know they're talking to you).
+* Encrypts communication so no one can read or modify the data between client and server.  
+To generate them use : `openssl`  
+
+
