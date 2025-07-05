@@ -2,7 +2,7 @@ FROM debian:bullseye
 
 RUN apt-get update && apt-get install -y nginx openssl
 
-RUN mkdir -p /etc/ssl/certs /etc/ssl/private\
+RUN mkdir -p /etc/ssl/certs /etc/ssl/private && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY conf/certs/cert.pem /etc/ssl/certs/
