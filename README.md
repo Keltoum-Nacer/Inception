@@ -236,4 +236,19 @@ these are essential tools for WordPress to run:
 -> configure PHP-FPM.  
 `exec php-fpm7.4 -F`
 -> start PHP-FPM in foreground, so it becomes PID1, this is required to keep the docker container running.  
-=> WordPress now runs via PHP-FPM.
+=> WordPress now runs via PHP-FPM.  
+
+## How to login into MariaDB database?
+
+`docker exec -it mariadb sh` -> log into the database from the mariadb container.  
+then inside the container:  
+`mysql -u"$DB_USER" -p"$DB_PASSWORD" -h"$DB_HOST"`  
+where: $DB_USER, $DB_PASSWORD, $DB_HOST are loaded from .env file.  
+- To check that database is not empty:  
+`SHOW DATABASES;`  
+`USE wordpress;`
+`SHOW TABLES;`
+- To show the list of users in your WordPress database:  
+`SELECT ID, user_login, user_email, user_registered FROM wp_users;`  
+- To show the list of posts in your WordPress database:  
+`SELECT Id, post_title, post_status, post_type, post_date FROM wp_posts WHERE post_type = 'post';`

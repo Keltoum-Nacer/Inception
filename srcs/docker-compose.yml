@@ -1,8 +1,7 @@
 
 services:
   nginx:
-    build:
-      context: ./requirements/nginx
+    build: ./requirements/nginx
     container_name: nginx
     env_file:
       - .env
@@ -11,8 +10,10 @@ services:
     restart: always
     networks:
       - inception
+    depends_on:
+      - wordpress
     volumes:
-      - ./requirements/nginx/conf/certs:/etc/nginx/certs
+      - wordpress:/var/www/wordpress
 
   wordpress:
     build: ./requirements/wordpress
@@ -20,12 +21,14 @@ services:
     env_file:
       - .env
     volumes:
-      - wordpress_data:/var/www/wordpress
+      - wordpress:/var/www/wordpress
     networks:
       - inception
     restart: always
     depends_on:
       -  mariadb
+    expose:
+      - "9000"
 
   mariadb:
     build: ./requirements/mariadb
@@ -33,19 +36,59 @@ services:
     env_file:
       - .env
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mariadb:/var/lib/mysql
     networks:
       - inception
     restart: always
+    expose:
+      - "3306"
+
+  static-website:
+    build: ./requirements/bonus/static-website
+    container_name: static-website
+    restart: always
+    networks:
+      - inception
+    ports:
+      - "8080:80"
+
+  adminer:
+    build: ./requirements/bonus/adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8081:80"
+    networks:
+      - inception
+
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - inception
 
 volumes:
-  wordpress_data:
+  wordpress:
     driver: local
-    name: wordpress_data
-  mariadb_data:
+    name: wordpress
+    driver_opts:
+      type: none
+      device: /home/knacer/data/wordpress
+      o: bind
+  mariadb:
     driver: local
-    name: mariadb_data
+    name: mariadb
+    driver_opts:
+      type: none
+      device: /home/knacer/data/mariadb
+      o: bind
 
 networks:
   inception:
+    name: inception
     driver: bridge

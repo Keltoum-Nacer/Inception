@@ -1,25 +1,40 @@
 #!/bin/bash
 
-curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-chmod +x wp-cli.phar
-mv wp-cli.phar /usr/local/bin/wp
+set -e  # Exit on any error
 
-mkdir -p /run/php
+mkdir -p /var/www/wordpress
 cd /var/www/wordpress
 
+# Install wp-cli if not present
+if [ ! -f /usr/local/bin/wp ]; then
+    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    chmod +x wp-cli.phar
+    mv wp-cli.phar /usr/local/bin/wp
+fi
+
+# Wait for database to be ready 
+echo "Waiting for database at $DB_HOST ..."
+until mysqladmin ping -h"$DB_HOST" --silent; do
+  echo "Waiting for database connection..."
+  sleep 3
+done
+
 if [ ! -f wp-config.php ]; then
-    curl -O https://wordpress.org/latest.tar.gz
-    tar -xzf latest.tar.gz --strip-components=1
-    rm latest.tar.gz
+    # Only download core if not already downloaded
+    if [ ! -f wp-load.php ]; then
+        wp core download --allow-root
+    fi
 
-    cp wp-config-sample.php wp-config.php
+    # Create wp-config.php with DB credentials
+    wp config create --dbname="${DB_NAME}" --dbuser="${DB_USER}" --dbpass="${DB_PASSWORD}" --dbhost="${DB_HOST}" --allow-root
+fi
 
-    sed -i "s/database_name_here/${DB_NAME}/" wp-config.php
-    sed -i "s/username_here/${DB_USER}/" wp-config.php
-    sed -i "s/password_here/${DB_PASSWORD}/" wp-config.php
-    sed -i "s/localhost/${DB_HOST}/" wp-config.php
 
-    sleep 10
+if ! wp core is-installed --allow-root; then
+    if [[ "${WP_ADMIN_USER}" =~ [Aa]dmin|[Aa]dministrator ]]; then
+        echo "Error: Administrator username cannot contain 'admin', 'Admin', or 'administrator' ..."
+        exit 1
+    fi
 
     wp core install \
       --url="${DOMAIN_NAME}" \
@@ -40,7 +55,8 @@ fi
 chown -R www-data:www-data /var/www/wordpress
 chmod -R 755 /var/www/wordpress
 
-sed -i 's|listen = /run/php/php7.4-fpm.sock|listen = 9000|' /etc/php/7.4/fpm/pool.d/www.conf
+wp theme activate twentytwentyfour --allow-root
 
+mkdir -p /run/php
+echo "Starting PHP-FPM..."
 exec php-fpm7.4 -F
-
